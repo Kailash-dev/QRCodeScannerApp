@@ -1,57 +1,59 @@
-// // import React, {useState, useRef} from 'react';
+// import React, {useEffect, useState} from 'react';
 // import {
 //   StyleSheet,
-//   Text,
 //   View,
+//   Text,
 //   PermissionsAndroid,
 //   Platform,
 // } from 'react-native';
+// import {
+//   Camera,
+//   useCameraDevices,
+//   useFrameProcessor,
+// } from 'react-native-vision-camera';
+// import {runOnJS} from 'react-native-reanimated';
 
-// import {Camera, useCameraDevice} from 'react-native-vision-camera';
 
-// import React, {useEffect} from 'react';
+// const App = () => {
+//   const [hasPermission, setHasPermission] = useState(false);
+//   const [qrCode, setQrCode] = useState<string | null>(null);
+//   const devices = useCameraDevices();
+//   const device = devices[0];
 
-// const requestCameraPermission = async () => {
-//   try {
-//     const granted = await PermissionsAndroid.request(
-//       PermissionsAndroid.PERMISSIONS.CAMERA,
-//       {
-//         title: 'Permission to use camera',
-//         message: 'We need your permission to use your camera',
-//         buttonPositive: 'OK',
-//         buttonNegative: 'Cancel',
-//       },
-//     );
-//     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-//       console.log('Camera permission granted');
-//     } else {
-//       console.log('Camera permission denied');
-//     }
-//   } catch (err) {
-//     console.warn(err);
-//   }
-// };
-
-// const App2 = () => {
 //   useEffect(() => {
-//     if (Platform.OS === 'android') {
-//       requestCameraPermission();
-//     } else if (Platform.OS === 'ios') {
-//       // Handle permissions for iOS if needed
+//     const requestCameraPermission = async () => {
+//       if (Platform.OS === 'android') {
+//         const granted = await PermissionsAndroid.request(
+//           PermissionsAndroid.PERMISSIONS.CAMERA,
+//           {
+//             title: 'Camera Permission',
+//             message: 'App needs camera permission',
+//             buttonNeutral: 'Ask Me Later',
+//             buttonNegative: 'Cancel',
+//             buttonPositive: 'OK',
+//           },
+//         );
+//         setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
+//       } else {
+//         const status = await Camera.requestCameraPermission();
+//         setHasPermission(status === 'authorized');
+//       }
+//     };
+//     ``;
+
+//     requestCameraPermission();
+//   }, []);
+
+//   const frameProcessor = useFrameProcessor(frame => {
+//     'worklet';
+//     const barcodes = scanBarcodes(frame, [BarcodeFormat.QR_CODE]);
+//     if (barcodes.length > 0) {
+//       runOnJS(setQrCode)(barcodes[0].displayValue);
 //     }
 //   }, []);
 
-//   const handleBarCodeScanned = ({data}) => {
-//     console.log(`QR code scanned: ${data}`);
-//     // Process the scanned QR code data here (e.g., store it in state, show in UI, etc.)
-//     // Example: setScannedData(data);
-//   };
-
-//   const device = useCameraDevice('back');
-
-//   if (device == null) {
-//     return <Text>alskjdf</Text>;
-//   }
+//   if (device == null) return <Text>Loading...</Text>;
+//   if (!hasPermission) return <Text>No access to camera</Text>;
 
 //   return (
 //     <View style={styles.container}>
@@ -59,8 +61,14 @@
 //         style={StyleSheet.absoluteFill}
 //         device={device}
 //         isActive={true}
-//         onBarCodeScanned={handleBarCodeScanned}
+//         frameProcessor={frameProcessor}
+//         // frameProcessorFps={5}
 //       />
+//       {qrCode && (
+//         <View style={styles.qrContainer}>
+//           <Text style={styles.qrText}>QR Code: {qrCode}</Text>
+//         </View>
+//       )}
 //     </View>
 //   );
 // };
@@ -68,123 +76,21 @@
 // const styles = StyleSheet.create({
 //   container: {
 //     flex: 1,
-//     backgroundColor: 'black',
-//     justifyContent: 'center',
+//   },
+//   qrContainer: {
+//     position: 'absolute',
+//     bottom: 40,
+//     left: 0,
+//     right: 0,
 //     alignItems: 'center',
 //   },
-//   preview: {
-//     flex: 1,
-//     justifyContent: 'flex-end',
-//     alignItems: 'center',
-//     width: '100%',
-//     height: '100%', // Adjust height to ensure the preview fits the screen
-//   },
-//   text: {
+//   qrText: {
+//     fontSize: 20,
 //     color: 'white',
-//     fontSize: 18,
-//     marginTop: 20,
-//   },
-//   button: {
-//     backgroundColor: '#4CAF50',
+//     backgroundColor: 'rgba(0,0,0,0.7)',
 //     padding: 10,
-//     margin: 10,
 //     borderRadius: 5,
-//   },
-//   buttonText: {
-//     color: 'white',
-//     fontSize: 16,
-//     textAlign: 'center',
-//   },
-//   resultContainer: {
-//     marginTop: 20,
-//     padding: 10,
-//     backgroundColor: '#f0f0f0',
-//     width: '90%',
-//     borderRadius: 10,
-//   },
-//   resultText: {
-//     fontSize: 16,
-//     marginBottom: 5,
-//     color: 'green',
 //   },
 // });
 
-// export default App2;
-
-import React, {useEffect} from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  PermissionsAndroid,
-  Platform,
-} from 'react-native';
-import {Camera, useCameraDevice} from 'react-native-vision-camera';
-import QRScannerScreen from './QRScreen';
-
-const requestCameraPermission = async () => {
-  try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.CAMERA,
-      {
-        title: 'Permission to use camera',
-        message: 'We need your permission to use your camera',
-        buttonPositive: 'OK',
-        buttonNegative: 'Cancel',
-      },
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('Camera permission granted');
-    } else {
-      console.log('Camera permission denied');
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-};
-
-const App2 = () => {
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      requestCameraPermission();
-    } else if (Platform.OS === 'ios') {
-      // Handle permissions for iOS if needed
-    }
-  }, []);
-
-  const device = useCameraDevice('back');
-
-  const handleBarCodeScanned = ({data}: any) => {
-    console.log(`QR code scanned: ${data}`);
-    // Process the scanned QR code data here (e.g., store it in state, show in UI, etc.)
-    // Example: setScannedData(data);
-  };
-
-  if (device == null) {
-    return <Text>Loading...</Text>;
-  }
-
-  return (
-    <View style={styles.container}>
-      <Camera
-        style={StyleSheet.absoluteFill}
-        device={device}
-        isActive={true}
-
-        // onBarCodeScanned={handleBarCodeScanned} // Add this prop for QR code scanning
-      />
-      <QRScannerScreen></QRScannerScreen>
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'black',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
-
-export default App2;
+// export default App;
