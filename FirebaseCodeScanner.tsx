@@ -10,8 +10,8 @@ import {RNCamera, BarCodeReadEvent} from 'react-native-camera';
 
 const App = () => {
   const [scannedCodes, setScannedCodes] = useState<string[]>([]);
-  const [analyzedResult, setAnalyzedResult] = useState<string>('');
   const [scannedCount, setScannedCount] = useState<number>(0);
+  const [processing, setProcessing] = useState<boolean>(false);
 
   const handleBarCodeRead = (event: BarCodeReadEvent) => {
     const {data} = event;
@@ -22,13 +22,16 @@ const App = () => {
   };
 
   const handleProcess = () => {
-    const result = scannedCodes.join('\n');
-    setAnalyzedResult(result);
+    setProcessing(true);
+    setTimeout(() => {
+      const result = scannedCodes.join('\n');
+      setProcessing(false);
+      alert(result); // Replace with your processing logic
+    }, 2000); // Simulating processing delay with setTimeout
   };
 
   const handleReset = () => {
     setScannedCodes([]);
-    setAnalyzedResult('');
     setScannedCount(0);
   };
 
@@ -42,9 +45,9 @@ const App = () => {
         onBarCodeRead={handleBarCodeRead}
         captureAudio={false}
         barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}>
-        <View style={styles.barcodeContainer}>
+        <View style={styles.overlay}>
           {scannedCodes.map((code, index) => (
-            <Text key={index} style={styles.barcodeText}>
+            <Text key={index} style={styles.overlayText}>
               {code}
             </Text>
           ))}
@@ -53,8 +56,11 @@ const App = () => {
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.processButton]}
-          onPress={handleProcess}>
-          <Text style={styles.buttonText}>Process</Text>
+          onPress={handleProcess}
+          disabled={processing || scannedCodes.length === 0}>
+          <Text style={styles.buttonText}>
+            {processing ? 'Processing...' : 'Process'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.resetButton]}
@@ -62,13 +68,13 @@ const App = () => {
           <Text style={styles.buttonText}>Reset</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.resultContainer}>
-        {analyzedResult ? (
-          <Text style={styles.resultText}>{analyzedResult}</Text>
-        ) : (
-          <Text style={styles.resultText}>Scan QR codes to see results...</Text>
-        )}
-      </View>
+      {processing && (
+        <View style={styles.processingContainer}>
+          <Text style={styles.processingText}>
+            Processing {scannedCount} QR codes...
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -94,18 +100,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-  barcodeContainer: {
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 5,
-    margin: 20,
-    maxHeight: 200,
-    overflow: 'scroll',
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  barcodeText: {
+  overlayText: {
     fontSize: 20,
-    color: '#000000',
-    marginBottom: 5,
+    color: 'white',
+    textShadowColor: 'black',
+    textShadowOffset: {width: 1, height: 1},
+    textShadowRadius: 3,
+    marginBottom: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -131,13 +141,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  resultContainer: {
-    marginTop: 20,
-    paddingHorizontal: 20,
+  processingContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 20,
+    borderRadius: 10,
   },
-  resultText: {
+  processingText: {
     fontSize: 18,
-    color: '#333333',
+    color: 'white',
   },
 });
 
