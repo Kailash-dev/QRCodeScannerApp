@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   View,
@@ -45,15 +45,13 @@ const App = () => {
         onBarCodeRead={handleBarCodeRead}
         captureAudio={false}
         barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}>
-        <View style={styles.overlay}>
-          {scannedCodes.map((code, index) => (
-            <Text key={index} style={styles.overlayText}>
-              {code}
-            </Text>
-          ))}
-        </View>
+        <View style={styles.overlay}></View>
       </RNCamera>
       <View style={styles.buttonContainer}>
+        <View>
+          <Text style={styles.buttonText}>Scanned: {scannedCount}</Text>
+        </View>
+
         <TouchableOpacity
           style={[styles.button, styles.processButton]}
           onPress={handleProcess}
@@ -109,14 +107,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  overlayText: {
-    fontSize: 20,
-    color: 'white',
-    textShadowColor: 'black',
-    textShadowOffset: {width: 1, height: 1},
-    textShadowRadius: 3,
-    marginBottom: 10,
-  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -137,7 +127,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
   },
   buttonText: {
-    color: 'white',
+    color: 'black',
     fontSize: 18,
     fontWeight: 'bold',
   },
