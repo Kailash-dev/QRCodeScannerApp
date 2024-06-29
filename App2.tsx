@@ -170,6 +170,7 @@ const App2 = () => {
         style={StyleSheet.absoluteFill}
         device={device}
         isActive={true}
+
         // onBarCodeScanned={handleBarCodeScanned} // Add this prop for QR code scanning
       />
       <QRScannerScreen></QRScannerScreen>
